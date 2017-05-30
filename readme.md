@@ -1,3 +1,4 @@
+First Forking just using for me not recommended to use.
 # Laravel chunked upload
 Easy to use service for chunked upload with several js providers on top of Laravel's file upload.
 
@@ -27,12 +28,12 @@ Easy to use service for chunked upload with several js providers on top of Larav
 ```
 composer require pion/laravel-chunk-upload
 ```
-    
+
 **Add the service provider**
 
 ```php
 \Pion\Laravel\ChunkUpload\Providers\ChunkUploadServiceProvider::class
-```    
+```
 
 ___Optional___
 
@@ -89,7 +90,7 @@ is present in the request, it will create the save object.
 If the file in the request is chunk, it will create the `ChunkSave` object, otherwise creates the `SingleSave`
 which doesn't nothing at this moment.
 
-## Example 
+## Example
 
 The full example (Laravel 5.4 - works same on previous versions) can be found in separate repo: [laravel-chunk-upload-example](https://github.com/pionl/laravel-chunk-upload-example)
 
@@ -122,11 +123,11 @@ $element.fileupload({
             console.log("fileuploadchunkfail")
         });
 ```
-    
+
 ### Laravel controller
 * Create laravel controller `UploadController` and create the file receiver with the desired handler.
 * You must import the full namespace in your controller (`use`).
-* When upload is finished, don't forget to **move the file to desired folder (as standard UploadFile implementation)**. 
+* When upload is finished, don't forget to **move the file to desired folder (as standard UploadFile implementation)**.
 You can check the example project.
 * An example of save function below the handler usage
 
@@ -140,7 +141,7 @@ Build the `FileReceiver` with a first uploaded file in the request.
 
 [Full Controller in example](https://github.com/pionl/laravel-chunk-upload-example/blob/master/app/Http/Controllers/DependencyUploadController.php)
 
-```php 
+```php
 /**
  * Handles the file upload
  *
@@ -193,7 +194,7 @@ This will force a given handler to be used for processing the upload.
  * @param Request $request
  *
  * @return \Illuminate\Http\JsonResponse
- * 
+ *
  * @throws UploadMissingFileException
  */
 public function upload(Request $request) {
@@ -216,7 +217,7 @@ public function upload(Request $request) {
 
             /** @var ContentRangeUploadHandler $handler */
             $handler = $save->handler();
-            
+
             return response()->json([
                 "start" => $handler->getBytesStart(),
                 "end" => $handler->getBytesEnd(),
@@ -240,7 +241,7 @@ public function upload(Request $request) {
  * @param Int $fileIndex
  *
  * @return \Illuminate\Http\JsonResponse
- * 
+ *
  * @throws UploadMissingFileException
  */
 public function upload(Request $request) {
@@ -250,35 +251,35 @@ public function upload(Request $request) {
 
     // Get array of files from request
     $files = $request->file('files');
-    
+
     if (!is_array($files)) {
         throw new UploadMissingFileException();
     }
 
-    
+
     // Loop sent files
     foreach ($files as $file) {
         // Instead of passing the index name, pass the UploadFile object from the $files array we are looping
-        
+
         // Create the file receiver via dynamic handler
         $receiver = new FileReceiver($file, $request, HandlerFactory::classFromRequest($request));
         // or via static handler usage
         $receiver = new FileReceiver($file, $request, ContentRangeUploadHandler::class);
-        
+
         if ($receiver->isUploaded()) {
             // receive the file
             $save = $receiver->receive();
-    
+
             // check if the upload has finished (in chunk mode it will send smaller files)
             if ($save->isFinished()) {
                 // save the file and return any response you need
                 $files[] = $this->saveFile($save->getFile());
             } else {
                 // we are in chunk mode, lets send the current progress
-    
+
                 /** @var ContentRangeUploadHandler $handler */
                 $handler = $save->handler();
-                
+
                 // Add the completed file
                 $files[] = [
                     "start" => $handler->getBytesStart(),
@@ -289,7 +290,7 @@ public function upload(Request $request) {
             }
         }
     }
-    
+
     return response()->json($files);
 }
 ```
@@ -349,7 +350,7 @@ php artisan uploads:clear
 
 #### Unique naming
 In default we use client browser info to generate unique name for the chunk file (support same file upload at same time).
-The logic supports also using the `Session::getId()`, but you need to force your JS library to send the cookie. 
+The logic supports also using the `Session::getId()`, but you need to force your JS library to send the cookie.
 You can update the `chunk.name.use` settings for custom usage.
 
 #### Cross domain request
@@ -359,7 +360,7 @@ When using uploader for the cross domain request you must setup the `chunk.name.
         "session" => false, // should the chunk name use the session id? The uploader muset send cookie!,
         "browser" => true // instead of session we can use the ip and browser?
     ]
-    
+
 Then setup your laravel [Setup guide](https://github.com/barryvdh/laravel-cors)
 
 ## Providers/Handlers
@@ -392,19 +393,19 @@ See the `Contribution` section in Readme
 
 You can use the automatic detection of the correct handler (provider) by using the `HandlerFactory::classFromRequest` as
 a third parameter when constructing the `FileReceiver`.
- 
+
 ```php
 $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
 ```
 #### Fallback class
-The default fallback class is stored in the HandlerFactory (default `SingleUploadHandler::class`). 
+The default fallback class is stored in the HandlerFactory (default `SingleUploadHandler::class`).
 
-You can change it globally by calling 
+You can change it globally by calling
 ```php
 HandlerFactory::setFallbackHandler(CustomHandler::class)
-```     
-or pass as second parameter when using 
- 
+```
+or pass as second parameter when using
+
 ```php
 HandlerFactory::classFromRequest($request, CustomHandler::class)
 ```
@@ -413,11 +414,11 @@ HandlerFactory::classFromRequest($request, CustomHandler::class)
 
 ### Since 1.0.3
 * Enabled to construct the `FileReceiver` with dependency injection - the fasted way.
-* Removed the `getChunkFile` and added `getUploadedFile` for all Save classes. Returns always the uploaded file (the uploaded chunk). 
+* Removed the `getChunkFile` and added `getUploadedFile` for all Save classes. Returns always the uploaded file (the uploaded chunk).
 
 ### Since 1.0.2
 * Added resumable.js
-* Added `getChunkFile` method in `ChunkSave` for returning only the chunk file 
+* Added `getChunkFile` method in `ChunkSave` for returning only the chunk file
 
 ### Since 1.0.1
 * Added support for passing file object instead of fileIndex (example: multiple files in a request). Change discussion in #7 (@RAZORzdenko), merged in #8
@@ -456,7 +457,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute changes. All contri
 ## Copyright and License
 
 [laravel-chunk-upload](https://github.com/pionl/laravel-chunk-upload)
-was written by [Martin Kluska](http://kluska.cz) and is released under the 
+was written by [Martin Kluska](http://kluska.cz) and is released under the
 [MIT License](LICENSE.md).
 
 Copyright (c) 2016 Martin Kluska
